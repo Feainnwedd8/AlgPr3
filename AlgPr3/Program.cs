@@ -3,66 +3,103 @@ using System.Collections.Generic;
 
 class Program
 {
-
-    // Recursive function for DFS traversal
-    static void DFSRec(List<List<int>> adj, bool[] visited, int s)
+    static void Main(string[] args)
     {
-
-        // Mark the current vertex as visited
-        visited[s] = true;
-
-        // Print the current vertex
-        Console.Write(s + " ");
-
-        // Recursively visit all adjacent vertices
-        // that are not visited yet
-        foreach (int i in adj[s])
+        // Definiowanie grafu jako listy sąsiedztwa
+        Dictionary<int, List<int>> graph = new Dictionary<int, List<int>>()
         {
-            if (!visited[i])
-            {
-                DFSRec(adj, visited, i);
-            }
-        }
-    }
-
-    // Main DFS function that initializes the visited array
-    static void PerformDFS(List<List<int>> adj, int s)
-    {
-        bool[] visited = new bool[adj.Count];
-        // Call the recursive DFS function
-        DFSRec(adj, visited, s);
-    }
-
-    static void AddEdge(List<List<int>> adj, int s, int t)
-    {
-        adj[s].Add(t);
-        adj[t].Add(s);
-    }
-
-    static void Main()
-    {
-        int V = 5;
-
-        // Create an adjacency list for the graph
-        List<List<int>> adj = new List<List<int>>(V);
-        for (int i = 0; i < V; i++)
-        {
-            adj.Add(new List<int>());
-        }
-
-        // Define the edges of the graph
-        int[,] edges = {
-            { 1, 2 }, { 1, 0 }, { 2, 0 }, { 2, 3 }, { 2, 4 }
+            { 0, new List<int> { 1, 2 } },
+            { 1, new List<int> { 0, 3, 4 } },
+            { 2, new List<int> { 0, 5 } },
+            { 3, new List<int> { 1 } },
+            { 4, new List<int> { 1, 5 } },
+            { 5, new List<int> { 2, 4 } }
         };
 
-        // Populate the adjacency list with edges
-        for (int i = 0; i < edges.GetLength(0); i++)
+        Console.WriteLine("Wybierz algorytm (1 - DFS, 2 - BFS): ");
+        int choice = int.Parse(Console.ReadLine());
+
+        Console.WriteLine("Podaj wierzchołek początkowy: ");
+        int start = int.Parse(Console.ReadLine());
+
+        Console.WriteLine("Podaj wierzchołek końcowy: ");
+        int end = int.Parse(Console.ReadLine());
+
+        if (choice == 1)
         {
-            AddEdge(adj, edges[i, 0], edges[i, 1]);
+            Console.WriteLine("DFS:");
+            DFS(graph, start, end);
+        }
+        else if (choice == 2)
+        {
+            Console.WriteLine("BFS:");
+            BFS(graph, start, end);
+        }
+        else
+        {
+            Console.WriteLine("Nieprawidłowy wybór.");
+        }
+    }
+
+    static void DFS(Dictionary<int, List<int>> graph, int start, int end)
+    {
+        HashSet<int> visited = new HashSet<int>();
+        List<int> path = new List<int>();
+        DFSUtil(graph, start, end, visited, path);
+    }
+
+    static void DFSUtil(Dictionary<int, List<int>> graph, int current, int end, HashSet<int> visited, List<int> path)
+    {
+        visited.Add(current);
+        path.Add(current);
+        Console.WriteLine(current);
+
+        if (current == end)
+        {
+            return;
         }
 
-        int source = 1; // Starting vertex for DFS
-        Console.WriteLine("DFS from source: " + source);
-        PerformDFS(adj, source);
+        foreach (var neighbor in graph[current])
+        {
+            if (!visited.Contains(neighbor))
+            {
+                DFSUtil(graph, neighbor, end, visited, path);
+                if (path.Contains(end)) // Jeśli dotarliśmy do końca, przerywamy
+                    return;
+            }
+        }
+
+        path.Remove(current); // Usuwamy wierzchołek z ścieżki, jeśli nie prowadzi do końca
+    }
+
+    static void BFS(Dictionary<int, List<int>> graph, int start, int end)
+    {
+        Queue<int> queue = new Queue<int>();
+        HashSet<int> visited = new HashSet<int>();
+        List<int> path = new List<int>();
+
+        queue.Enqueue(start);
+        visited.Add(start);
+
+        while (queue.Count > 0)
+        {
+            int current = queue.Dequeue();
+            path.Add(current);
+            Console.WriteLine(current);
+
+            if (current == end)
+            {
+                return;
+            }
+
+            foreach (var neighbor in graph[current])
+            {
+                if (!visited.Contains(neighbor))
+                {
+                    visited.Add(neighbor);
+                    queue.Enqueue(neighbor);
+                }
+            }
+        }
     }
 }
